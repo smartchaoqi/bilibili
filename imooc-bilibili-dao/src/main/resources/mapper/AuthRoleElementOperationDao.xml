@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.imooc.dao.AuthRoleElementOperationDao">
+    
+    <resultMap id="AuthElementOperationResultMap" type="com.imooc.domain.auth.AuthRoleElementOperation">
+        <id column="id" property="id"/>
+        <association property="authElementOperation" javaType="com.imooc.domain.auth.AuthElementOperation">
+            <collection column="elementName" property="elementName"/>
+            <collection property="elementCode" column="elementCode"/>
+            <collection property="operationType" column="operationType"/>
+        </association>
+        <collection property="roleId" column="roleId"/>
+        <collection property="elementOperationId" column="elementOperationId"/>
+        <collection property="createTime" column="createTime"/>
+    </resultMap>
+
+    <select id="getRoleElementOperationsByRoleIds" parameterType="java.util.Set" resultMap="AuthElementOperationResultMap">
+        select areo.* , aeo.elementCode , aeo.elementName , aeo.operationType
+        from t_auth_role_element_operation areo
+        left join t_auth_element_operation aeo on areo.elementOperationId=aeo.id
+        where
+            areo.roleId in
+            <foreach collection="roleIds" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+
+    </select>
+
+</mapper>

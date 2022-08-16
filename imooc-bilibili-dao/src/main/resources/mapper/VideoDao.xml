@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.imooc.dao.VideoDao">
+
+    <insert id="addVideo" useGeneratedKeys="true" keyProperty="id">
+        insert into t_video(userId, url, thumbnail, title, `type`, duration, area, `description`, createTime, updateTime) VALUES
+        (#{userId}, #{url}, #{thumbnail}, #{title}, #{type}, #{duration}, #{area}, #{description}, #{createTime}, #{updateTime})
+    </insert>
+
+    <insert id="batchAddVideoTags">
+        insert into t_video_tag(videoId, tagId, createTime) VALUES
+        <foreach collection="videoTagList" item="tag" separator=",">
+            (
+             #{tag.videoId},
+             #{tag.tagId},
+             #{tag.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="addVideoLike">
+        insert into t_video_like (userId, videoId, createTime) values (#{userId},#{videoId},#{createTime})
+    </insert>
+
+    <update id="updateVideoCoins">
+        update t_video_coin set updateTime=#{updateTime},amount=#{amount} where id=#{id}
+    </update>
+
+    <delete id="deleteVideoList">
+        delete from t_video_like  where userId=#{userId} and videoId=#{videoId}
+    </delete>
+
+    <select id="pageCountVideos" resultType="java.lang.Integer">
+        select count(1) from t_video where 1=1
+        <if test="area != null and area!= ''">
+            and area=#{area}
+        </if>
+    </select>
+
+    <select id="pageListVideos" resultType="com.imooc.domain.Video">
+        select * from t_video where 1=1
+        <if test="area != null and area!= ''">
+            and area=#{area}
+        </if>
+        order by id desc
+        limit #{start},#{limit}
+    </select>
+
+    <select id="getVideoLikeByUserIdAndVideoId" resultType="com.imooc.domain.VideoLike">
+        select * from t_video_like where userId=#{userId} and videoId=#{videoId}
+    </select>
+
+    <select id="getVideoLikes" resultType="java.lang.Integer">
+        select count(1) from t_video_like where videoId=#{videoId}
+    </select>
+
+    <select id="getVideoById" resultType="com.imooc.domain.Video">
+        select * from t_video where id=#{videoId}
+    </select>
+
+    <select id="getVideoCollections" resultType="java.lang.Long">
+        select
+            count(1)
+        from
+            t_video_collection
+        where
+            videoId = #{videoId}
+    </select>
+
+    <select id="getVideoCollectionByVideoIdAndUserId" resultType="com.imooc.domain.VideoCollection">
+        select
+            *
+        from
+            t_video_collection
+        where
+            videoId = #{videoId}
+          and userId = #{userId}
+    </select>
+
+    <select id="getVideoCoinByVideoIdAndUserId" resultType="com.imooc.domain.VideoCoin">
+        select * from t_video_coin where videoId=#{videoId} and userId=#{userId}
+    </select>
+
+    <select id="getVideoCoinsAmount" resultType="java.lang.Long">
+        select sum(amount) from t_video_coin where videoId=#{videoId}
+    </select>
+
+    <delete id="deleteVideoCollection">
+        delete from
+            t_video_collection
+        where
+            videoId = #{videoId}
+          and userId = #{userId}
+    </delete>
+
+    <insert id="addVideoCollection">
+        insert into
+            t_video_collection(
+            userId,
+            videoId,
+            groupId,
+            createTime
+        )values(
+                   #{userId},
+                   #{videoId},
+                   #{groupId},
+                   #{createTime}
+               )
+    </insert>
+
+    <insert id="addVideoCoins">
+        insert into t_video_coin(userId, videoId, amount, createTime, updateTime) VALUES
+        (#{userId}, #{videoId}, #{amount}, #{createTime}, #{updateTime})
+    </insert>
+
+</mapper>

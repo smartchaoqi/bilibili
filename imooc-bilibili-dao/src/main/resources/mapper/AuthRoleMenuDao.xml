@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.imooc.dao.AuthRoleMenuDao">
+
+    <resultMap id="AuthMenuResultMap" type="com.imooc.domain.auth.AuthRoleMenu">
+        <id column="id" property="id"/>
+        <association property="authMenu" javaType="com.imooc.domain.auth.AuthMenu">
+            <collection property="name" column="name"/>
+            <collection property="code" column="code"/>
+        </association>
+        <collection property="roleId" column="roleId"/>
+        <collection property="menuId" column="menuId"/>
+        <collection property="createTime" column="createTime"/>
+    </resultMap>
+
+    <select id="getRoleMenusByRoleIds" resultMap="AuthMenuResultMap">
+        select arm.*,am.name,am.code
+        from t_auth_role_menu arm
+        left join t_auth_menu am on arm.menuId=am.id
+        where
+        arm.roleId in
+        <foreach collection="roleIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    
+</mapper>
