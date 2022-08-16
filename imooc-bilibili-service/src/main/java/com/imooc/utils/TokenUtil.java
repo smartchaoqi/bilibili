@@ -17,7 +17,7 @@ public class TokenUtil {
         Algorithm algorithm = Algorithm.RSA256(RSAUtil.getPublicKey(), RSAUtil.getPrivateKey());
         Calendar instance = Calendar.getInstance();
         instance.setTime(new Date());
-        instance.add(Calendar.SECOND,30);
+        instance.add(Calendar.HOUR,1);
         return JWT.create()
                 .withKeyId(String.valueOf(userId))
                 .withIssuer(ISSUER)
@@ -39,4 +39,15 @@ public class TokenUtil {
         }
     }
 
+    public static String generateRefreshToken(Long id) throws Exception {
+        Algorithm algorithm = Algorithm.RSA256(RSAUtil.getPublicKey(), RSAUtil.getPrivateKey());
+        Calendar instance = Calendar.getInstance();
+        instance.setTime(new Date());
+        instance.add(Calendar.DAY_OF_MONTH,7);
+        return JWT.create()
+                .withKeyId(String.valueOf(id))
+                .withIssuer(ISSUER)
+                .withExpiresAt(instance.getTime())
+                .sign(algorithm);
+    }
 }

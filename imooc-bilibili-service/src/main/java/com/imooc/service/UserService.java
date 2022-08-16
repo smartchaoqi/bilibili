@@ -4,6 +4,7 @@ import com.imooc.domain.User;
 import com.imooc.domain.UserInfo;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     void addUser(User user);
@@ -20,4 +21,10 @@ public interface UserService {
     List<UserInfo> getUserInfoByUserIds(List<Long> collect);
 
     void updateUsers(User user);
+
+    Map<String, Object> loginForDts(User user) throws Exception;
+
+    void logout(Long userId, String refreshToken);
+
+    String refreshAccessToken(String refreshToken) throws Exception;
 }

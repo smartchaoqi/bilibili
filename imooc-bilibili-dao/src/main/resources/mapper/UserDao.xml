@@ -9,6 +9,10 @@
         (#{phone},#{email},#{password},#{salt},#{createTime},#{updateTime})
     </insert>
 
+    <insert id="addRefreshToken">
+        insert into t_refresh_token(userId, refreshToken, createTime) values (#{userId},#{refreshToken},#{date})
+    </insert>
+
     <update id="updateUser">
         update t_user set
         <if test="phone != null and phone != ''">
@@ -24,6 +28,10 @@
         where id=#{id}
     </update>
 
+    <delete id="deleteRefreshToken">
+        delete from t_refresh_token where userId=#{userId} and refreshToken=#{refreshToken}
+    </delete>
+
     <select id="getUserByPhone" parameterType="java.lang.String" resultType="com.imooc.domain.User">
         select * from t_user where phone=#{phone}
     </select>
@@ -34,6 +42,10 @@
 
     <select id="getUserByPhoneOrEmail" resultType="com.imooc.domain.User">
         select * from t_user where phone=#{phone} or email=#{email}
+    </select>
+
+    <select id="getRefreshTokenDetail" resultType="com.imooc.domain.RefreshTokenDetail">
+        select * from t_refresh_token where refreshToken=#{refreshToken}
     </select>
 
 </mapper>

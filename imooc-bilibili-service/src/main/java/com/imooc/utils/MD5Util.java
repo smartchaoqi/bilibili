@@ -1,8 +1,9 @@
 package com.imooc.utils;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 
 /**
  * MD5加密
@@ -33,5 +34,16 @@ public class MD5Util {
 		} else {
 			return content.getBytes();
 		}
+	}
+
+	public static String getFileMd5(MultipartFile file) throws IOException {
+		InputStream inputStream = file.getInputStream();
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		byte[] bytes=new byte[1024];
+		int size;
+		while((size=inputStream.read(bytes))>0){
+			byteArrayOutputStream.write(bytes,0,size);
+		}
+		return DigestUtils.md5Hex(byteArrayOutputStream.toByteArray());
 	}
 }
