@@ -16,10 +16,7 @@ import com.mysql.cj.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -191,5 +188,10 @@ public class UserServiceImpl implements UserService {
         }
         Long userId = detail.getUserId();
         return TokenUtil.generateToken(userId);
+    }
+
+    @Override
+    public List<UserInfo> batchGetUserInfoByUserIds(Set<Long> userIdList) {
+        return userDao.batchGetUserInfoByUserIds(userIdList);
     }
 }

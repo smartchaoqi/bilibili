@@ -1,9 +1,6 @@
 package com.imooc.service;
 
-import com.imooc.domain.PageResult;
-import com.imooc.domain.Video;
-import com.imooc.domain.VideoCoin;
-import com.imooc.domain.VideoCollection;
+import com.imooc.domain.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,4 +28,10 @@ public interface VideoService {
     void addVideoCoins(VideoCoin videoCoin, Long userId);
 
     Map<String, Object> getVideoCoins(Long videoId, Long userId);
+
+    void addVideoComment(VideoComment videoComment, Long userId);
+
+    PageResult<VideoComment> pageListVideoComments(Integer no, Integer size, Long videoId);
+
+    Map<String, Object> getVideoDetails(Long videoId);
 }

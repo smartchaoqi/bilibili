@@ -5,6 +5,7 @@ import com.imooc.domain.UserInfo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface UserService {
     void addUser(User user);
@@ -27,4 +28,6 @@ public interface UserService {
     void logout(Long userId, String refreshToken);
 
     String refreshAccessToken(String refreshToken) throws Exception;
+
+    List<UserInfo> batchGetUserInfoByUserIds(Set<Long> userIdList);
 }

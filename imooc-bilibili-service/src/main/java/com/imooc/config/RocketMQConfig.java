@@ -6,6 +6,7 @@ import com.imooc.domain.UserFollowing;
 import com.imooc.domain.UserMoment;
 import com.imooc.domain.constant.UserMomentsConstant;
 import com.imooc.service.UserFollowingService;
+import com.imooc.websocket.WebSocketService;
 import com.mysql.cj.util.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -76,6 +77,42 @@ public class RocketMQConfig {
             }
         });
         consumer.start();
+        return consumer;
+    }
+
+    @Bean("danmuProducer")
+    public DefaultMQProducer danmuProducer() throws MQClientException {
+        DefaultMQProducer producer = new DefaultMQProducer(UserMomentsConstant.GROUP_DANMES);
+        producer.setNamesrvAddr(nameServerAddr);
+        producer.start();
+        return producer;
+    }
+
+    @Bean("danmuConsumer")
+    public DefaultMQPushConsumer danmuConsumer() throws MQClientException {
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(UserMomentsConstant.GROUP_DANMES);
+        consumer.setNamesrvAddr(nameServerAddr);
+        consumer.subscribe(UserMomentsConstant.TOPIC_DANMUS,"*");
+        consumer.registerMessageListener(new MessageListenerConcurrently() {
+            @Override
+            public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
+                MessageExt msg = list.get(0);
+                byte[] body = msg.getBody();
+                String bodyStr = new String(body);
+                JSONObject jsonObject = JSONObject.parseObject(bodyStr);
+                String sessionId = jsonObject.getString("sessionId");
+                String message = jsonObject.getString("message");
+                WebSocketService webSocketService = WebSocketService.WEBSOCKET_MAP.get(sessionId);
+                if (webSocketService.getSession().isOpen()){
+                    try{
+                        webSocketService.sendMessage(message);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            }
+        });
         return consumer;
     }
 }

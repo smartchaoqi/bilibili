@@ -2,10 +2,13 @@ package com.imooc.dao;
 
 import com.imooc.domain.RefreshTokenDetail;
 import com.imooc.domain.User;
+import com.imooc.domain.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Mapper
 public interface UserDao {
@@ -24,4 +27,6 @@ public interface UserDao {
     Integer addRefreshToken(@Param("refreshToken") String refreshToken, @Param("userId") Long userId, @Param("date") Date date);
 
     RefreshTokenDetail getRefreshTokenDetail(@Param("refreshToken") String refreshToken);
+
+    List<UserInfo> batchGetUserInfoByUserIds(Set<Long> userIdList);
 }

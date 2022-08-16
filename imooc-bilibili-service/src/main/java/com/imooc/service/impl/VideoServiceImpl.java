@@ -4,6 +4,7 @@ import com.imooc.dao.VideoDao;
 import com.imooc.domain.*;
 import com.imooc.exception.ConditionException;
 import com.imooc.service.UserCoinService;
+import com.imooc.service.UserService;
 import com.imooc.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class VideoServiceImpl implements VideoService {
@@ -159,6 +161,81 @@ public class VideoServiceImpl implements VideoService {
         Map<String,Object> result=new HashMap<>();
         result.put("count",count);
         result.put("like",like);
+        return result;
+    }
+
+    @Override
+    public void addVideoComment(VideoComment videoComment, Long userId) {
+        Long videoId = videoComment.getVideoId();
+        if (videoId==null){
+            throw new ConditionException("参数异常");
+        }
+        Video videoById = videoDao.getVideoById(videoId);
+        if (videoById==null){
+            throw new ConditionException("非法视频");
+        }
+        Date now = new Date();
+        videoComment.setCreateTime(now);
+        videoComment.setUpdateTime(now);
+        videoComment.setUserId(userId);
+        videoDao.addVideoComment(videoComment);
+    }
+
+    @Autowired
+    UserService userService;
+    @Override
+    public PageResult<VideoComment> pageListVideoComments(Integer no, Integer size, Long videoId) {
+        Video videoById = videoDao.getVideoById(videoId);
+        if (videoById==null){
+            throw new ConditionException("非法视频");
+        }
+        Map<String,Object> params=new HashMap<>();
+        params.put("start",(no-1)*size);
+        params.put("limit",size);
+        params.put("videoId",videoId);
+        Integer total=videoDao.pageCountVideoComments(params);
+        List<VideoComment> list=new ArrayList<>();
+        if (total>0){
+            list=videoDao.pageListVideoComments(params);
+            //批量查询二级评论
+            List<Long> rootIds = list.stream().map(VideoComment::getId).collect(Collectors.toList());
+            List<VideoComment> childCommentList = videoDao.batchGetVideoCommentsByRootId(rootIds);
+            //查询用户信息
+            Set<Long> userIdList = list.stream().map(VideoComment::getUserId).collect(Collectors.toSet());
+            userIdList.addAll(childCommentList.stream().map(VideoComment::getUserId).collect(Collectors.toSet()));
+            List<UserInfo> infos = userService.batchGetUserInfoByUserIds(userIdList);
+            Map<Long, UserInfo> userInfoMap = infos.stream().collect(Collectors.toMap(UserInfo::getUserId, info -> info));
+            list.forEach(comment->{
+                Long id = comment.getId();
+                List<VideoComment> childList=new ArrayList<>();
+                childCommentList.forEach(child->{
+                    if (id.equals(child.getRootId())){
+                        child.setUserInfo(userInfoMap.get(child.getUserId()));
+                        child.setReplyUserInfo(userInfoMap.get(child.getReplyUserId()));
+                        childList.add(child);
+                    }
+                });
+
+                comment.setChildList(childList);
+                comment.setUserInfo(userInfoMap.get(comment.getUserId()));
+            });
+        }
+        PageResult<VideoComment> videoCommentPageResult = new PageResult<>();
+        videoCommentPageResult.setTotal(total);
+        videoCommentPageResult.setList(list);
+        return videoCommentPageResult;
+    }
+
+    @Override
+    public Map<String, Object> getVideoDetails(Long videoId) {
+        Video video = videoDao.getVideoDetail(videoId);
+        Long userId = video.getUserId();
+        User user = userService.getUserInfo(userId);
+        UserInfo userInfo = user.getUserInfo();
+
+        Map<String,Object> result=new HashMap<>();
+        result.put("video",video);
+        result.put("userInfo",userInfo);
         return result;
     }
 

@@ -123,4 +123,39 @@ public class VideoApi {
         Map<String,Object> result=videoService.getVideoCoins(videoId,userId);
         return new JsonResponse<>(result);
     }
+
+    /**
+     * 添加视频评论
+     * @param videoComment
+     * @return
+     */
+    @PostMapping("/video-comments")
+    public JsonResponse<String> addVideoComment(@RequestBody VideoComment videoComment){
+        Long userId = userSupport.getCurrentUserId();
+        videoService.addVideoComment(videoComment,userId);
+        return JsonResponse.success();
+    }
+
+    /**
+     * 分页查询视频评论
+     * @return
+     */
+    @GetMapping("/video-comments")
+    public JsonResponse<PageResult<VideoComment>> pageListVideoComments(@RequestParam("no") Integer no,
+                                                                        @RequestParam("size") Integer size,
+                                                                        @RequestParam("videoId") Long videoId){
+        PageResult<VideoComment> result = videoService.pageListVideoComments(no,size,videoId);
+        return new JsonResponse<>(result);
+    }
+
+    /**
+     * 获取视频详情
+     * @param videoId
+     * @return
+     */
+    @GetMapping("/video-details")
+    public JsonResponse<Map<String,Object>> getVideoDetails(@RequestParam("videoId") Long videoId){
+        Map<String,Object> result=videoService.getVideoDetails(videoId);
+        return new JsonResponse<>(result);
+    }
 }

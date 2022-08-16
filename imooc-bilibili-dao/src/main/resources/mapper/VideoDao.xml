@@ -87,6 +87,28 @@
         select sum(amount) from t_video_coin where videoId=#{videoId}
     </select>
 
+    <select id="pageCountVideoComments" resultType="java.lang.Integer">
+        select count(1) from t_video_comment where videoId=#{videoId} and rootId is null
+    </select>
+
+    <select id="pageListVideoComments" resultType="com.imooc.domain.VideoComment">
+        select * from t_video_comment where videoId=#{videoId}
+        and rootId is null
+        order by id desc
+        limit #{start},#{limit}
+    </select>
+
+    <select id="batchGetVideoCommentsByRootId" resultType="com.imooc.domain.VideoComment">
+        select * from t_video_comment where rootId in
+        <foreach collection="rootIds" item="rootId" separator="," open="(" close=")">
+            #{rootId}
+        </foreach>
+    </select>
+
+    <select id="getVideoDetail" resultType="com.imooc.domain.Video">
+        select * from t_video where id=#{videoId}
+    </select>
+
     <delete id="deleteVideoCollection">
         delete from
             t_video_collection
@@ -113,6 +135,11 @@
     <insert id="addVideoCoins">
         insert into t_video_coin(userId, videoId, amount, createTime, updateTime) VALUES
         (#{userId}, #{videoId}, #{amount}, #{createTime}, #{updateTime})
+    </insert>
+
+    <insert id="addVideoComment">
+        insert into t_video_comment(videoId, userId, `comment`, replyUserId, rootId, createTime, updateTime) VALUES
+        (#{videoId},#{userId},#{comment},#{replyUserId},#{rootId},#{createTime},#{updateTime})
     </insert>
 
 </mapper>
