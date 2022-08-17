@@ -1,9 +1,11 @@
 package com.imooc.service;
 
 import com.imooc.domain.*;
+import org.apache.mahout.cf.taste.common.TasteException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
 public interface VideoService {
@@ -34,4 +36,10 @@ public interface VideoService {
     PageResult<VideoComment> pageListVideoComments(Integer no, Integer size, Long videoId);
 
     Map<String, Object> getVideoDetails(Long videoId);
+
+    void addVideoView(VideoView videoView, HttpServletRequest request);
+
+    Integer getVideoViewCounts(Long videoId);
+
+    List<Video> recommend(Long userId) throws TasteException;
 }

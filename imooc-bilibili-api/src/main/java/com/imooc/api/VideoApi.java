@@ -1,14 +1,17 @@
 package com.imooc.api;
 
 import com.imooc.domain.*;
+import com.imooc.service.ElasticSearchService;
 import com.imooc.service.VideoService;
 import com.imooc.support.UserSupport;
 import com.qiniu.util.Json;
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,11 +22,16 @@ public class VideoApi {
     @Autowired
     private UserSupport userSupport;
 
+    @Autowired
+    private ElasticSearchService elasticSearchService;
+
     @PostMapping("/videos")
     public JsonResponse<String> addVideos(@RequestBody Video video){
         Long userId = userSupport.getCurrentUserId();
         video.setUserId(userId);
         videoService.addVideos(video);
+        //es中添加
+        elasticSearchService.addVideo(video);
         return JsonResponse.success();
     }
 
@@ -157,5 +165,47 @@ public class VideoApi {
     public JsonResponse<Map<String,Object>> getVideoDetails(@RequestParam("videoId") Long videoId){
         Map<String,Object> result=videoService.getVideoDetails(videoId);
         return new JsonResponse<>(result);
+    }
+
+    /**
+     * 添加视频观看记录
+     * @param videoView
+     * @param request
+     * @return
+     */
+    @PostMapping("/video-views")
+    public JsonResponse<String> addVideoView(@RequestBody VideoView videoView,
+                                             HttpServletRequest request){
+        Long userId;
+        try{
+            userId=userSupport.getCurrentUserId();
+            videoView.setUserId(userId);
+            videoService.addVideoView(videoView,request);
+        }catch (Exception e){
+            videoService.addVideoView(videoView,request);
+        }
+        return JsonResponse.success();
+    }
+
+    /**
+     * 查询视频播放量
+     * @param videoId
+     * @return
+     */
+    @GetMapping("/video-view-counts")
+    public JsonResponse<Integer> getVideoViewCounts(@RequestParam Long videoId){
+        Integer count = videoService.getVideoViewCounts(videoId);
+        return new JsonResponse<>(count);
+    }
+
+    /**
+     * 视频内容推荐
+     * @return
+     */
+    @GetMapping("/recommendations")
+    public JsonResponse<List<Video>> recommend() throws TasteException {
+        Long userId = userSupport.getCurrentUserId();
+        List<Video> response = videoService.recommend(userId);
+        return new JsonResponse<>(response);
     }
 }
